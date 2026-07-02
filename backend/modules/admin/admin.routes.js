@@ -15,5 +15,7 @@ router.use(roleMiddleware(['Admin']));
 router.post('/organizer', adminController.createOrganizer);
 router.get('/organizers', adminController.viewOrganizers);
 router.get('/organizers/count', adminController.organizerCount);
+router.put('/organizer/:id', adminController.updateOrganizer);
+router.delete('/organizer/:id', adminController.deleteOrganizer);
 
 module.exports = router;

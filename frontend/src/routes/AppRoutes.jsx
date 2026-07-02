@@ -4,6 +4,7 @@ import Login from '../pages/Login';
 import AdminDashboard from '../pages/AdminDashboard';
 import OrganizerDashboard from '../pages/OrganizerDashboard';
 import AttenderDashboard from '../pages/AttenderDashboard';
+import Payment from '../pages/Payment';
 import ProtectedRoute from '../components/ProtectedRoute';
 
 const AppRoutes = () => {
@@ -35,8 +36,25 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      {/* Attender Dashboard Route (Public) */}
-      <Route path="/attender/dashboard" element={<AttenderDashboard />} />
+      {/* Attender Dashboard Route (Protected) */}
+      <Route
+        path="/attender/dashboard"
+        element={
+          <ProtectedRoute allowedRoles={['Attender']}>
+            <AttenderDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Attender Payment Route (Protected) */}
+      <Route
+        path="/attender/payment/:eventId"
+        element={
+          <ProtectedRoute allowedRoles={['Attender']}>
+            <Payment />
+          </ProtectedRoute>
+        }
+      />
 
     </Routes>
   );

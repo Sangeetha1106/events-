@@ -47,3 +47,15 @@ export const getOrganizerBookings = async () => {
   const response = await api.get('/organizer/bookings');
   return response.data;
 };
+
+// Organizer: Update a booking
+export const updateBooking = async (id, bookingData) => {
+  const response = await api.put(`/booking/${id}`, bookingData);
+  return response.data;
+};
+
+// Organizer: Delete a booking
+export const deleteBooking = async (id) => {
+  const response = await api.delete(`/booking/${id}`);
+  return response.data;
+};

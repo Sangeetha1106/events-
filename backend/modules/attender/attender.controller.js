@@ -1,12 +1,13 @@
 const bcrypt = require('bcryptjs');
 const Attender = require('./attender.model');
 const Organizer = require('../organizer/organizer.model');
+const Booking = require('../booking/booking.model');
 const { generateToken } = require('../../utils/jwt');
 const { sendSuccess, sendError } = require('../../utils/response');
 
 const register = async (req, res) => {
     try {
-        const { fullName, email, password } = req.body;
+        const { fullName, email, phoneNumber, password } = req.body;
 
         const existingAttender = await Attender.findOne({ where: { email } });
         if (existingAttender) {
@@ -18,6 +19,7 @@ const register = async (req, res) => {
         const newAttender = await Attender.create({
             fullName,
             email,
+            phoneNumber,
             password: hashedPassword
         });
 
@@ -80,9 +82,122 @@ const viewOrganizerDetails = async (req, res) => {
     }
 };
 
+const getProfile = async (req, res) => {
+    try {
+        const attender = await Attender.findByPk(req.user.id, {
+            attributes: ['id', 'fullName', 'email', 'phoneNumber', 'role']
+        });
+        if (!attender) {
+            return sendError(res, 404, 'Profile not found');
+        }
+        return sendSuccess(res, 200, 'Profile retrieved successfully', attender);
+    } catch (error) {
+        return sendError(res, 500, 'Server error', error.message);
+    }
+};
+
+const updateProfile = async (req, res) => {
+    try {
+        const { fullName, email, phoneNumber, password } = req.body;
+        const attender = await Attender.findByPk(req.user.id);
+        if (!attender) {
+            return sendError(res, 404, 'Profile not found');
+        }
+
+        if (email && email !== attender.email) {
+            const existingEmail = await Attender.findOne({ where: { email } });
+            if (existingEmail) {
+                return sendError(res, 400, 'Email is already taken by another user');
+            }
+            attender.email = email;
+        }
+
+        if (fullName) attender.fullName = fullName;
+        if (phoneNumber !== undefined) attender.phoneNumber = phoneNumber;
+
+        if (password) {
+            attender.password = await bcrypt.hash(password, 10);
+        }
+
+        await attender.save();
+
+        const updatedData = attender.toJSON();
+        delete updatedData.password;
+
+        return sendSuccess(res, 200, 'Profile updated successfully', updatedData);
+    } catch (error) {
+        return sendError(res, 500, 'Server error', error.message);
+    }
+};
+
+// Organizer: Update an attender's details
+const organizerUpdateAttender = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { fullName, email, phoneNumber, ticketType } = req.body;
+
+        const attender = await Attender.findByPk(id);
+        if (!attender) {
+            return sendError(res, 404, 'Attendee not found');
+        }
+
+        if (email && email !== attender.email) {
+            const existingEmail = await Attender.findOne({ where: { email } });
+            if (existingEmail) {
+                return sendError(res, 400, 'Email is already taken by another user');
+            }
+            attender.email = email;
+        }
+
+        if (fullName) attender.fullName = fullName;
+        if (phoneNumber !== undefined) attender.phoneNumber = phoneNumber;
+
+        await attender.save();
+
+        // Also update bookings linked to this attender with name/email changes
+        if (fullName || email) {
+            const updateFields = {};
+            if (fullName) updateFields.fullName = fullName;
+            if (email) updateFields.email = email;
+            await Booking.update(updateFields, { where: { attenderId: id } });
+        }
+
+        const updatedData = attender.toJSON();
+        delete updatedData.password;
+
+        return sendSuccess(res, 200, 'Attendee updated successfully', updatedData);
+    } catch (error) {
+        return sendError(res, 500, 'Server error', error.message);
+    }
+};
+
+// Organizer: Delete an attender and their bookings
+const organizerDeleteAttender = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const attender = await Attender.findByPk(id);
+        if (!attender) {
+            return sendError(res, 404, 'Attendee not found');
+        }
+
+        // Cascade delete all bookings for this attender
+        await Booking.destroy({ where: { attenderId: id } });
+        await attender.destroy();
+
+        return sendSuccess(res, 200, 'Attendee deleted successfully');
+    } catch (error) {
+        return sendError(res, 500, 'Server error', error.message);
+    }
+};
+
 module.exports = {
     register,
     login,
     viewOrganizers,
-    viewOrganizerDetails
+    viewOrganizerDetails,
+    getProfile,
+    updateProfile,
+    organizerUpdateAttender,
+    organizerDeleteAttender
 };

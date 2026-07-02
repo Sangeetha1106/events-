@@ -16,3 +16,13 @@ export const createOrganizer = async (organizerData) => {
     const response = await api.post('/admin/organizer', organizerData);
     return response.data;
 };
+
+export const updateOrganizer = async (id, organizerData) => {
+    const response = await api.put(`/admin/organizer/${id}`, organizerData);
+    return response.data;
+};
+
+export const deleteOrganizer = async (id) => {
+    const response = await api.delete(`/admin/organizer/${id}`);
+    return response.data;
+};

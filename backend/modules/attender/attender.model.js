@@ -16,6 +16,10 @@ const Attender = sequelize.define('Attender', {
         allowNull: false,
         unique: true,
     },
+    phoneNumber: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
     password: {
         type: DataTypes.STRING,
         allowNull: false,

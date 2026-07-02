@@ -7,6 +7,11 @@ const Organizer = sequelize.define('Organizer', {
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
     },
+    organizerName: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: 'Unknown Organizer',
+    },
     organizationName: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -26,6 +31,14 @@ const Organizer = sequelize.define('Organizer', {
     role: {
         type: DataTypes.STRING,
         defaultValue: 'Organizer',
+    },
+    status: {
+        type: DataTypes.STRING,
+        defaultValue: 'Active',
+    },
+    emailStatus: {
+        type: DataTypes.STRING,
+        defaultValue: 'pending',
     }
 }, {
     tableName: 'organizers',
